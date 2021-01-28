@@ -5,7 +5,21 @@ from django.http import JsonResponse
 import os
 from dss.dex import DEXModel
 from django.http import HttpResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.serializers import serialize
+import numpy as np
+
+
 from django.conf import settings
+
+class NumpyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(self, obj)
 
 folder = 'D:/uploads/'
 
@@ -23,15 +37,23 @@ def dex_local_input(request):
         dex = DEXModel(f'{folder}{files[len(files) - 1]}')
         return dex.get_intput_attributes()
 
+@require_http_methods(["GET"])
 def dex_input(request):
-    if request.method == 'GET':
-        dex = DEXModel(settings.DEX_MODEL) 
-        return JsonResponse(dex.get_intput_attributes(), safe=True)
+    dex = DEXModel(settings.DEX_MODEL) 
+    return JsonResponse(dex.get_intput_attributes(), safe=True)
 
+@csrf_exempt
+@require_http_methods(["POST"])
 def dex_evaluate(request):
-    if request.method == 'GET':
-        dex = DEXModel(settings.DEX_MODEL) 
-        return JsonResponse(dex.evaluate_model(dex_local_input(request)), safe=False)
+    dex = DEXModel(settings.DEX_MODEL) 
+    data = json.loads(request.body)
+    res, qq_res = dex.evaluate_model(data)
+
+    dex_res = dict()
+    dex_res['quantitative'] = res
+    dex_res['qualitative'] = qq_res
+
+    return JsonResponse(dex_res, safe=False, encoder=NumpyEncoder)
     
 
 def my_view(request):
