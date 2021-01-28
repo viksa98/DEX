@@ -121,3 +121,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DATA_ROOT = os.path.join(BASE_DIR, '../data/')
+DEX_MODEL = os.path.join(DATA_ROOT, 'SKP Evaluation version 3.xml')

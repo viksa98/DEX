@@ -4,6 +4,8 @@ from .forms import DocumentForm
 from django.http import JsonResponse
 import os
 from .dex import DEXModel
+from django.http import HttpResponse
+from django.conf import settings
 
 folder = 'D:/uploads/'
 
@@ -23,14 +25,12 @@ def dex_local_input(request):
 
 def dex_input(request):
     if request.method == 'GET':
-        files = get_file()
-        dex = DEXModel(f'{folder}{files[len(files) - 1]}')
+        dex = DEXModel(settings.DEX_MODEL) 
         return JsonResponse(dex.get_intput_attributes(), safe=False)
 
 def dex_evaluate(request):
     if request.method == 'GET':
-        files = get_file()
-        dex = DEXModel(f'{folder}{files[len(files) - 1]}')
+        dex = DEXModel(settings.DEX_MODEL) 
         return JsonResponse(dex.evaluate_model(dex_local_input(request)), safe=False)
     
 
