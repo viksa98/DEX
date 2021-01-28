@@ -3,7 +3,7 @@ from .models import Document
 from .forms import DocumentForm
 from django.http import JsonResponse
 import os
-from .dex import DEXModel
+from dss.dex import DEXModel
 from django.http import HttpResponse
 from django.conf import settings
 
@@ -26,7 +26,7 @@ def dex_local_input(request):
 def dex_input(request):
     if request.method == 'GET':
         dex = DEXModel(settings.DEX_MODEL) 
-        return JsonResponse(dex.get_intput_attributes(), safe=False)
+        return JsonResponse(dex.get_intput_attributes(), safe=True)
 
 def dex_evaluate(request):
     if request.method == 'GET':
