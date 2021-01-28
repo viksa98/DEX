@@ -38,9 +38,12 @@ class ESCOUtil:
       return len(np.setdiff1d(r1,r2)), len(np.setdiff1d(r2,r2))
 
   def get_all_skills_SKP2ESCO(self, df, skp_code):
-      union_res = np.array([])
-      for uri in df[df['SKP koda-4'] == skp_code]['URI'].unique():
-          res = list(self.skills_up_graph(URIRef(uri)))
-          union_res = np.union1d(res,union_res)
+        union_res = np.array([])
+#         who = df['SKP koda-6'] == skp_code
+#         print(who)
+        for uri in df[df['SKP koda-6'] == skp_code]['URI'].unique():
+#             print(uri)
+            res = list(self.skills_up_graph(URIRef(uri)))
+            union_res = np.union1d(res,union_res)
 
-      return union_res
+        return union_res
