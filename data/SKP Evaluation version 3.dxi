@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEXi>
+  <VERSION>5.04</VERSION>
+  <CREATED>2021-01-29T18:47:15</CREATED>
+  <OPTION>barmen Mons</OPTION>
+  <OPTION>barmen Coffee shop</OPTION>
+  <OPTION>barmen Union</OPTION>
+  <OPTION>barmen Test</OPTION>
+  <SETTINGS/>
+  <ATTRIBUTE>
+    <NAME>SKP Evaluation</NAME>
+    <DESCRIPTION>How well a future job fits an employee&apos;s wishes and characteristics?</DESCRIPTION>
+    <SCALE>
+      <SCALEVALUE>
+        <NAME>mis match</NAME>
+        <GROUP>BAD</GROUP>
+      </SCALEVALUE>
+      <SCALEVALUE>
+        <NAME>needs competence improvement</NAME>
+      </SCALEVALUE>
+      <SCALEVALUE>
+        <NAME>needs wish adjustments</NAME>
+        <GROUP>GOOD</GROUP>
+      </SCALEVALUE>
+      <SCALEVALUE>
+        <NAME>a good match</NAME>
+        <GROUP>GOOD</GROUP>
+      </SCALEVALUE>
+    </SCALE>
+    <FUNCTION>
+      <LOW>000000000102000102000203</LOW>
+    </FUNCTION>
+    <OPTION>02</OPTION>
+    <OPTION>023</OPTION>
+    <OPTION>023</OPTION>
+    <OPTION>023</OPTION>
+    <ATTRIBUTE>
+      <NAME>Skill appropriateness </NAME>
+      <DESCRIPTION>How many skills the unemployeed person needs to fulfil? </DESCRIPTION>
+      <SCALE>
+        <SCALEVALUE>
+          <NAME>inappropriate</NAME>
+          <GROUP>BAD</GROUP>
+        </SCALEVALUE>
+        <SCALEVALUE>
+          <NAME>small chances</NAME>
+        </SCALEVALUE>
+        <SCALEVALUE>
+          <NAME>needs improvements</NAME>
+        </SCALEVALUE>
+        <SCALEVALUE>
+          <NAME>appropriate</NAME>
+          <GROUP>GOOD</GROUP>
+        </SCALEVALUE>
+      </SCALE>
+      <FUNCTION>
+        <LOW>000011011000022033000033033</LOW>
+      </FUNCTION>
+      <OPTION>01</OPTION>
+      <OPTION>023</OPTION>
+      <OPTION>023</OPTION>
+      <OPTION>023</OPTION>
+      <ATTRIBUTE>
+        <NAME>Available positions</NAME>
+        <DESCRIPTION>What is the estimated number of available positions in compariosn with the estimated number of competitors (other unemployeed persons)?</DESCRIPTION>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>small</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>medium</NAME>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>large</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <OPTION>0</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+      </ATTRIBUTE>
+      <ATTRIBUTE>
+        <NAME>SKPvsESCO</NAME>
+        <DESCRIPTION>Number of skills that needs to be learned</DESCRIPTION>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>&gt;10</NAME>
+            <DESCRIPTION>BO needs to gain more than 10 new competences</DESCRIPTION>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>5 - 10</NAME>
+            <DESCRIPTION>BO needs to gain bewtween 5 and 10 new competences</DESCRIPTION>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>&lt; 5 new competences</NAME>
+            <DESCRIPTION>BO needs to gain less than 5 new competences</DESCRIPTION>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <OPTION>*</OPTION>
+        <OPTION>*</OPTION>
+        <OPTION>*</OPTION>
+        <OPTION>*</OPTION>
+      </ATTRIBUTE>
+      <ATTRIBUTE>
+        <NAME>Skills</NAME>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>many</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>a few</NAME>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>none</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <FUNCTION>
+          <LOW>0112</LOW>
+        </FUNCTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <ATTRIBUTE>
+          <NAME>Languages</NAME>
+          <DESCRIPTION>Does the candidate fulfills the languge knowledge requirements</DESCRIPTION>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>no</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>yes</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+        </ATTRIBUTE>
+        <ATTRIBUTE>
+          <NAME>Driving licence</NAME>
+          <DESCRIPTION>Does the candidate fulfills the drving licence requirements?</DESCRIPTION>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>no</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>yes</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+        </ATTRIBUTE>
+      </ATTRIBUTE>
+    </ATTRIBUTE>
+    <ATTRIBUTE>
+      <NAME>Personal characteristics</NAME>
+      <DESCRIPTION>How well a future job matches the unemployeed person characteristics and wishes?</DESCRIPTION>
+      <SCALE>
+        <SCALEVALUE>
+          <NAME>mis match</NAME>
+          <GROUP>BAD</GROUP>
+        </SCALEVALUE>
+        <SCALEVALUE>
+          <NAME>needs wish adjustments</NAME>
+          <GROUP>GOOD</GROUP>
+        </SCALEVALUE>
+        <SCALEVALUE>
+          <NAME>a good match</NAME>
+          <GROUP>GOOD</GROUP>
+        </SCALEVALUE>
+      </SCALE>
+      <FUNCTION>
+        <LOW>00000012</LOW>
+      </FUNCTION>
+      <OPTION>2</OPTION>
+      <OPTION>2</OPTION>
+      <OPTION>2</OPTION>
+      <OPTION>2</OPTION>
+      <ATTRIBUTE>
+        <NAME>Age appropriateness </NAME>
+        <DESCRIPTION>Aggregates data for job requirements and candidate&apos;s age</DESCRIPTION>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>no</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>yes</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+      </ATTRIBUTE>
+      <ATTRIBUTE>
+        <NAME>Disability appropriateness </NAME>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>no</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>yes</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+      </ATTRIBUTE>
+      <ATTRIBUTE>
+        <NAME>SKP Wish</NAME>
+        <DESCRIPTION>Is this job on the wish list of the jobseecker?</DESCRIPTION>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>no</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>yes</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+      </ATTRIBUTE>
+    </ATTRIBUTE>
+    <ATTRIBUTE>
+      <NAME>Job appropriateness </NAME>
+      <SCALE>
+        <SCALEVALUE>
+          <NAME>inappropriate</NAME>
+          <GROUP>BAD</GROUP>
+        </SCALEVALUE>
+        <SCALEVALUE>
+          <NAME>appropriate</NAME>
+          <GROUP>GOOD</GROUP>
+        </SCALEVALUE>
+      </SCALE>
+      <FUNCTION>
+        <LOW>000000000000011011</LOW>
+      </FUNCTION>
+      <OPTION>1</OPTION>
+      <OPTION>1</OPTION>
+      <OPTION>1</OPTION>
+      <OPTION/>
+      <ATTRIBUTE>
+        <NAME>Contract type</NAME>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>ne</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>da</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <FUNCTION>
+          <LOW>111101</LOW>
+        </FUNCTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION>1</OPTION>
+        <OPTION/>
+        <ATTRIBUTE>
+          <NAME>BO wishes for contract type</NAME>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>part time</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>not important</NAME>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>full time</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>*</OPTION>
+        </ATTRIBUTE>
+        <ATTRIBUTE>
+          <NAME>Job contract type</NAME>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>part time</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>full time</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <OPTION>1</OPTION>
+          <OPTION>0</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>*</OPTION>
+        </ATTRIBUTE>
+      </ATTRIBUTE>
+      <ATTRIBUTE>
+        <NAME>Work type</NAME>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>1</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>2</NAME>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>3</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <FUNCTION>
+          <LOW>000112</LOW>
+        </FUNCTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <OPTION>12</OPTION>
+        <ATTRIBUTE>
+          <NAME>Career advance</NAME>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>1</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>2</NAME>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>3</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <FUNCTION>
+            <LOW>211022012</LOW>
+          </FUNCTION>
+          <OPTION>2</OPTION>
+          <OPTION>2</OPTION>
+          <OPTION>2</OPTION>
+          <OPTION>12</OPTION>
+          <ATTRIBUTE>
+            <NAME>BO career wishes</NAME>
+            <DESCRIPTION>If the BO wishes to have a career advancement or stay on the same level or worse because of other issues (age, health...)</DESCRIPTION>
+            <SCALE>
+              <SCALEVALUE>
+                <NAME>downgrade</NAME>
+                <GROUP>BAD</GROUP>
+              </SCALEVALUE>
+              <SCALEVALUE>
+                <NAME>same</NAME>
+              </SCALEVALUE>
+              <SCALEVALUE>
+                <NAME>upgrade career</NAME>
+                <GROUP>GOOD</GROUP>
+              </SCALEVALUE>
+            </SCALE>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>*</OPTION>
+          </ATTRIBUTE>
+          <ATTRIBUTE>
+            <NAME>Job career advancement</NAME>
+            <DESCRIPTION>what kind of carear advancement does the job offers</DESCRIPTION>
+            <SCALE>
+              <SCALEVALUE>
+                <NAME>down</NAME>
+                <GROUP>BAD</GROUP>
+              </SCALEVALUE>
+              <SCALEVALUE>
+                <NAME>same</NAME>
+              </SCALEVALUE>
+              <SCALEVALUE>
+                <NAME>up</NAME>
+                <GROUP>GOOD</GROUP>
+              </SCALEVALUE>
+            </SCALE>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+          </ATTRIBUTE>
+        </ATTRIBUTE>
+        <ATTRIBUTE>
+          <NAME>Working hours</NAME>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>ne</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>da</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <FUNCTION>
+            <LOW>1011</LOW>
+          </FUNCTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <ATTRIBUTE>
+            <NAME>BO working hours wishes</NAME>
+            <DESCRIPTION>Limitations regarding the working hours of the BO</DESCRIPTION>
+            <SCALE>
+              <SCALEVALUE>
+                <NAME>daily shift</NAME>
+                <GROUP>BAD</GROUP>
+              </SCALEVALUE>
+              <SCALEVALUE>
+                <NAME>daily/night shift</NAME>
+                <GROUP>GOOD</GROUP>
+              </SCALEVALUE>
+            </SCALE>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+          </ATTRIBUTE>
+          <ATTRIBUTE>
+            <NAME>Job working hours</NAME>
+            <SCALE>
+              <SCALEVALUE>
+                <NAME>daily shift</NAME>
+                <GROUP>BAD</GROUP>
+              </SCALEVALUE>
+              <SCALEVALUE>
+                <NAME>daily/night shift</NAME>
+                <GROUP>GOOD</GROUP>
+              </SCALEVALUE>
+            </SCALE>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+            <OPTION>1</OPTION>
+          </ATTRIBUTE>
+        </ATTRIBUTE>
+      </ATTRIBUTE>
+      <ATTRIBUTE>
+        <NAME>Location</NAME>
+        <SCALE>
+          <SCALEVALUE>
+            <NAME>1</NAME>
+            <GROUP>BAD</GROUP>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>2</NAME>
+          </SCALEVALUE>
+          <SCALEVALUE>
+            <NAME>3</NAME>
+            <GROUP>GOOD</GROUP>
+          </SCALEVALUE>
+        </SCALE>
+        <FUNCTION>
+          <LOW>011122</LOW>
+        </FUNCTION>
+        <OPTION>1</OPTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <OPTION>2</OPTION>
+        <ATTRIBUTE>
+          <NAME>MSO</NAME>
+          <DESCRIPTION>How far is the working position?</DESCRIPTION>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>&gt; 20 km</NAME>
+              <DESCRIPTION>above 2 km</DESCRIPTION>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>10 - 20 km</NAME>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>&lt; 10 km</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <OPTION>1</OPTION>
+          <OPTION>2</OPTION>
+          <OPTION>2</OPTION>
+          <OPTION>2</OPTION>
+        </ATTRIBUTE>
+        <ATTRIBUTE>
+          <NAME>BO wish location</NAME>
+          <DESCRIPTION>Preferences of the unemployeed person regarding traveling. Does BO wishes to travel?</DESCRIPTION>
+          <SCALE>
+            <SCALEVALUE>
+              <NAME>no</NAME>
+              <GROUP>BAD</GROUP>
+            </SCALEVALUE>
+            <SCALEVALUE>
+              <NAME>yes</NAME>
+              <GROUP>GOOD</GROUP>
+            </SCALEVALUE>
+          </SCALE>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+          <OPTION>1</OPTION>
+        </ATTRIBUTE>
+      </ATTRIBUTE>
+    </ATTRIBUTE>
+  </ATTRIBUTE>
+</DEXi>

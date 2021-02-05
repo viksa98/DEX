@@ -348,7 +348,6 @@ class DEXModel:
         for k,v in self.attributes.items():
             if v.level == 1:
                 retval[v.name] = list(v.scale.scalevalue.keys())
-
         return retval
     
     
