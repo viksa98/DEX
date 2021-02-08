@@ -2,8 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('', my_view, name='my-view'),
+    path('', provide_attributes, name='provide_attributes'),
     path('dexeval', dex_evaluate, name='dex-eval'),
     path('dexinput', dex_input, name='dex-input'),
-    path('testinput', post_edit, name='post_edit'),
+    path('dexresult', provide_attributes, name='dex_result'),
 ]

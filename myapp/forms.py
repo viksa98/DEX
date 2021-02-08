@@ -1,29 +1,14 @@
 from django import forms
-from django.forms import ModelForm
-from .models import Polinja
 
+# Vo slucaj da treba file uplaod
+# class DocumentForm(forms.Form):
+#     docfile = forms.FileField(label="Select a file")
 
-class DocumentForm(forms.Form):
-    docfile = forms.FileField(label="Select a file")
-
-
-class PolinjaForm(ModelForm):
-    class Meta:
-        model = Polinja
-        fields = [
-            "Available_positions",
-            "SKPvsESCO",
-            "Languages",
-            "Driving_licence",
-            "Age_appropriateness",
-            "Disability_appropriateness",
-            "SKP_Wish",
-            "BO_wishes_for_contract_type",
-            "Job_contract_type",
-            "BO_career_wishes",
-            "Job_career_advancement",
-            "BO_working_hours_wishes",
-            "Job_working_hours",
-            "MSO",
-            "BO_wish_location",
-        ]
+class DexForm(forms.Form):
+    def __init__(self, dex_attributes={}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for k in dex_attributes.keys():
+            vals = dex_attributes[k]
+            vals.insert(0,'*')
+            choices = list(zip(vals,vals))
+            self.fields[k] = forms.ChoiceField(choices=choices, widget=forms.Select(attrs={'class':'form-control'}))

@@ -54,8 +54,7 @@
             <h2 class="title">DEX: Decision Support System For PES</h2>
           </div>
           <div class="card-body">
-            <!-- Zameni so /dexeval -->
-            <form id="post-form" method="POST" action="/dexeval">
+            <form id="post-form" method="POST" action="dexresult">{% csrf_token %}
               {% for field in form %}
               <div class="form-row">
                 <div class="name">{{ field.label }}</div>
