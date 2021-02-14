@@ -1,6 +1,5 @@
 from django import forms
 
-# Vo slucaj da treba file uplaod
 # class DocumentForm(forms.Form):
 #     docfile = forms.FileField(label="Select a file")
 

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Required meta tags-->
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
@@ -10,18 +10,12 @@
     <meta name="description" content="" />
     <meta name="author" content="Viktor Andonovic" />
     <meta name="keywords" content="" />
-
-    <!-- Title Page-->
-    <title>DEX PES</title>
     {% load static %}
+    <link rel="stylesheet" href="{% static  'css/jsonview.bundle.css' %}" />
+    <title>DEX Result</title>
     <!-- Icons font CSS-->
     <link
       href="{% static 'vendor/mdi-font/css/material-design-iconic-font.min.css' %}"
-      rel="stylesheet"
-      media="all"
-    />
-    <link
-      href="{% static 'vendor/font-awesome-4.7/css/font-awesome.min.css' %}"
       rel="stylesheet"
       media="all"
     />
@@ -53,32 +47,25 @@
           <div class="card-heading">
             <h2 class="title">DEX: Decision Support System For PES</h2>
           </div>
-          <div class="card-body">
-            <form id="post-form" method="POST" action="/">
-              {% csrf_token %} {% for field in form %}
-              <div class="form-row">
-                <div class="name">{{ field.label }}</div>
-                <div class="value">
-                  <div class="input-group">
-                    <div class="rs-select2 js-select-simple select--no-search">
-                      {{field}}
-                      <div class="select-dropdown"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {% endfor %}
-              <div>
-                <button class="btn btn--radius-2 btn--red" type="submit">
-                  Evaluate
-                </button>
-              </div>
-            </form>
-          </div>
+          <div class="card-body root"></div>
         </div>
       </div>
     </div>
-
+    <script src="{% static 'js/jsonview.bundle.js' %}"></script>
+    <script type="text/javascript">
+      fetch("static/test.json")
+        .then((res) => {
+          return res.text();
+        })
+        .then((data) => {
+          const tree = JsonView.createTree(data);
+          JsonView.render(tree, document.querySelector(".root"));
+          JsonView.expandChildren(tree);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    </script>
     <!-- Jquery JS-->
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
     <!-- Vendor JS-->
@@ -90,4 +77,3 @@
     <script src="{% static 'js/global.js' %}"></script>
   </body>
 </html>
-<!-- end document-->

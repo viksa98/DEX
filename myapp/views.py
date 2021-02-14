@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from .forms import DexForm
 from django.http import JsonResponse
 from dss.dex import DEXModel
@@ -8,13 +8,17 @@ from django.core.serializers.json import DjangoJSONEncoder
 import numpy as np
 from django.conf import settings
 
+# from django.views.decorators.csrf import csrf_exempt
+
+
 class NumpyEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super().default(self, obj)
 
-# Vo slucaj da treba file uplaod
+
+# vo sluchaj da treba da uploadirame fajlovi!
 # def get_file():
 #     filess = []
 #     for filename in os.listdir(folder):
@@ -23,10 +27,12 @@ class NumpyEncoder(DjangoJSONEncoder):
 #             filess.append(filename)
 #     return filess
 
+
 @require_http_methods(["GET"])
 def dex_input(request):
     dex = DEXModel(settings.DEX_MODEL)
     return JsonResponse(dex.get_intput_attributes(), safe=True)
+
 
 @require_http_methods(["POST"])
 def dex_evaluate(request):
@@ -40,7 +46,8 @@ def dex_evaluate(request):
 
     return JsonResponse(dex_res, safe=False, encoder=NumpyEncoder)
 
-# Vo slucaj da treba file uplaod
+
+# isto vo sluchaj da treba da aploadirame fajlovi!
 # def my_view(request):
 #     message = "Upload as many files as you want!"
 #     if request.method == "POST":
@@ -59,21 +66,28 @@ def dex_evaluate(request):
 
 #     context = {"documents": documents, "form": form, "message": message}
 #     return render(request, "list.html", context)
-
+# @csrf_exempt
 def provide_attributes(request):
     dex = DEXModel(settings.DEX_MODEL)
     if request.method == "POST":
         form = DexForm(dex.get_intput_attributes(), request.POST)
-        print(form.is_valid())
         if form.is_valid():
             dataa = form.cleaned_data
-            res, qq_res = dex.evaluate_model(dataa)
-            
+            res, _ = dex.evaluate_model(dataa)
+
             dex_res = dict()
             dex_res["quantitative"] = res
-            dex_res["qualitative"] = qq_res
 
-            return JsonResponse(dex_res, safe=False, encoder=NumpyEncoder)
+            with open("myapp/static/test.json", "wb") as json_file:
+                json_file.write(
+                    JsonResponse(dex_res, safe=False, encoder=NumpyEncoder).content
+                )
+
+            return redirect("/dexresult")
     else:
         form = DexForm((dex.get_intput_attributes()))
     return render(request, "template.html", {"form": form})
+
+
+def dex_result(request):
+    return render(request, "dexresult.html")
