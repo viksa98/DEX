@@ -24,8 +24,7 @@ class DexForm2(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         occupations = pd.read_excel(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
-        path = "C:/Users/Viktor/Desktop/pavle/viktor/hecat_django/data/"
-        ue = pd.read_csv(os.path.join(path, "sifUpravneEnote.csv"))
+        ue = pd.read_csv(os.path.join(settings.DATA_ROOT, "sifUpravneEnote.csv"))
         ue = ue[ue.StatusSF == 'A']
         vals = occupations["SKP koda-4"]
         vals1 = occupations["SKP poklic"].drop_duplicates()
