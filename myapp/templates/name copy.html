@@ -13,7 +13,7 @@
         <h2>Input form</h2>
         <p class="lead">Based on the filled data and the future assesments of the labour market the system will provide the recommendation of the most plausable scenarions</p>
       </div>
-    <form action="/test" method="post">
+    <form action="eval_hecat_dex" method="post">
         {% csrf_token %}
         {% for field in form %}
          <div class="form-group">

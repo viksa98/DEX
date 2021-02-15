@@ -14,7 +14,11 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.serializers import serialize
 import numpy as np
 from django.shortcuts import render
-import utils
+# from .utils import select_positions
+import myapp.utils as utils
+import pickle
+import networkx as nx
+import bisect
 
 import logging
 
@@ -40,17 +44,17 @@ folder = "D:/uploads/"
 @require_http_methods(["POST"])
 def eval_hecat_dex(request):
     dexmodel = DEXModel(settings.DEX_MODEL)
-    esco = esco_utils.ESCOUtil()
+    esco = ESCOUtil()
     occupations = utils.get_occupation()
     napoved_year = 2018
     napoved_period = 'I'
 
     skp_skills = pd.read_pickle(os.path.join(settings.DATA_ROOT,'skp_skills_%d-%s.pcl' % (napoved_year,napoved_period) ))
     res = pd.read_pickle('./data/res_merged_2018.pcl')
-    id_distance_time = pickle.load( open(os.path.join(settings.DATA_ROOT,'id_dist_time.pcl','rb') ))
+    id_distance_time = pickle.load( open(os.path.join(settings.DATA_ROOT,'id_dist_time.pcl'),'rb') )
     job_contract_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_contract_type.pcl'))
     job_working_hours_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_job_working_hours.pcl'))
-    DG = nx.read_gpickle(os.path.join(settings.DATA_ROOT, '/elise/career_graph.pcl'))
+    DG = nx.read_gpickle(os.path.join(settings.DATA_ROOT, 'elise/career_graph.pcl'))
 
 
     #Dummy default
@@ -63,33 +67,41 @@ def eval_hecat_dex(request):
     default = dexmodel.get_intput_attributes()
 
     # Form data
-    skp_code = 3434.01 # Input
-    up_enota = 50 # Sk.Loka
+    form = DexForm2(request.POST)
+    if form.is_valid():
+
+        skp_code = int(form.cleaned_data['skp_code'])
+        up_enota = int(form.cleaned_data['up_enota']) # Sk.Loka
+
+        wishes = np.array(form.cleaned_data['wishes']).astype(int)
+        wishes_location = np.array(form.cleaned_data['wishes_location']).astype(int)
+    else:
+        return HttpResponse('Error')
+
     data['BO wishes for contract type'] = 'full time'
     data['BO career wishes'] = '*'
     data['BO working hours wishes'] = 'daily shift'
 
-    wishes = [5120,5151,3322]
-    wishes_location = [59,60,61]
+
     # Form end
 
     # There is a case when SKP4 is listed. SKP-6 has two 'decimal' digits. This line checks whether the code is SKP4 or SKP6
     col_name = 'SKP koda-4' if int(skp_code) == skp_code else 'SKP koda-6'
-    bo_skills, bo_skill_opt = esco.get_all_skills_SKP2ESCO(occupations,  skp_code, col_name)
+    bo_skills = esco.get_all_skills_SKP2ESCO(occupations,  skp_code, col_name)
     dif_skills = skp_skills.apply(lambda x: len(np.setdiff1d(x.skills, bo_skills)), axis=1)
-    resSKPs = select_positions(res, up_enota, id_distance_time)
-    dif_df = pd.DataFrame({'SKP-4':skp_skills['SKP-4'],'diff':dif_skills})
-    dex_df = pd.merge(resSKPs, dif_df, on='SKP-4')
+    resSKPs = utils.select_positions(res, up_enota, id_distance_time)
+    dif_df = pd.DataFrame({'SKP-6':skp_skills['SKP-6'],'diff':dif_skills})
+    dex_df = pd.merge(resSKPs, dif_df, on='SKP-6')
 
     all_eval = dict()
     all_qq = dict()
 
-    for r in dex_df.iterrows():
+    for r in dex_df.iloc[0:100].iterrows():
         vals = r[1]
         if '*' in wishes:
             data['SKP Wish'] = '*'
         else:
-            data['SKP Wish'] = 'yes' if vals['SKP-4'] in wishes else 'no'
+            data['SKP Wish'] = 'yes' if vals['SKP-6'] in wishes else 'no'
         ind = bisect.bisect_left([5,10], vals['diff'])
         data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
 
@@ -100,7 +112,7 @@ def eval_hecat_dex(request):
         data['MSO'] = np.flipud(default['MSO'])[ind]
 
         # Job contract type
-        wh = job_contract_mer['SFpoklicaSKP'].astype(int) == vals['SKP-4']
+        wh = job_contract_mer['SFpoklicaSKP'].astype(int) == vals['SKP-6']
         if np.any(wh):
             contract_type = job_contract_mer[wh].sort_values(by='dosežene točke (0-100)').iloc[0]['delovni čas']
             if 'Kraj' in contract_type:
@@ -130,9 +142,8 @@ def eval_hecat_dex(request):
         else:
             data['Job career advancement'] = 'same'
 
-
         # Job working hours
-        wh = job_working_hours_mer['SFpoklicaSKP'].astype(int) == vals['SKP-4']
+        wh = job_working_hours_mer['SFpoklicaSKP'].astype(int) == vals['SKP-6']
         if np.any(wh):
             working_hours = job_working_hours_mer[wh].sort_values(by='dosežene točke (0-100)').iloc[0]#['delovni čas']
             if working_hours['koda Urnik dela'] == 5:
@@ -156,9 +167,10 @@ def eval_hecat_dex(request):
     final_index = df_qq.sort_values(by='Eval_max',ascending=False).head(10).index
 
     intermediate = pd.merge(dex_df.loc[final_index],df_eval.loc[final_index], right_on=df_eval.loc[final_index].index, left_on=dex_df.loc[final_index].index)
-    final_df = pd.merge(intermediate, occupations.loc[:,['SKP koda-4','SKP poklic']], left_on='SKP-4', right_on='SKP koda-4')
+    final_df = pd.merge(intermediate, occupations.loc[:,['SKP koda-6','SKP poklic']], left_on='SKP-6', right_on='SKP koda-6')
+    final_df = pd.merge(final_df,df_qq.loc[final_index,['Eval_min', 'Eval_max']],  left_on='key_0', right_on=df_qq.loc[final_index].index)
 
-
+    return HttpResponse(final_df.to_html())
 
 def get_file():
     filess = []

@@ -8,6 +8,11 @@ import bisect
 import networkx as nx
 from django.conf import settings
 from django.core.cache import cache
+import os
+
+import logging
+
+logger = logging.getLogger("root")
 
 '''
 The function generates a DataFrame that include SKP4, number of positions, number of matching BO in same Municipality, distance of BO, and travel for BO
@@ -23,7 +28,8 @@ def select_positions(mer, bo_id_upravne_enote, id_distance_time):#, distance=10)
     dist = mer[wh].apply(lambda x: id_distance[x.IDupEnote][64],axis=1)
     xx['distance'] = dist
     '''
-    xx =  mer.loc[:,['SKP-4','weight_num','IDupEnote','number of BO']]
+
+    xx =  mer.loc[:,['SKP-6','weight_num','IDupEnote','number of BO']]
     dist = mer.apply(lambda x: id_distance_time[x.IDupEnote][bo_id_upravne_enote]['lengthInMeters']/1000.,axis=1)
     travel_time = mer.apply(lambda x: id_distance_time[x.IDupEnote][bo_id_upravne_enote]['travelTimeInSeconds']/60.,axis=1)
     xx['distance_km'] = dist
@@ -32,6 +38,7 @@ def select_positions(mer, bo_id_upravne_enote, id_distance_time):#, distance=10)
     return xx
 
 def get_occupation():
+    return pd.read_excel(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
     occupations = cache.get("occ")
     if occupations is None:
         logger.info("Loading occupations")

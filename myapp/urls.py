@@ -9,4 +9,5 @@ urlpatterns = [
     re_path("^skills/(?P<skp_code>\d+\.\d+)/$", get_skills, name="get_skills"),
     path("handeval/", handeval, name="handeval"),
     path("test", skp_view, name = 'skp-view'),
+    path("eval_hecat_dex", eval_hecat_dex, name = 'eval_hecat_dex'),
 ]
