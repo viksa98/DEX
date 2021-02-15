@@ -38,3 +38,9 @@ class DexForm2(forms.Form):
         self.fields["up_enota"] = forms.ChoiceField(
             choices=choices2, widget=forms.Select(attrs={"class": "form-control"})
         )
+        self.fields["wishes"] = forms.MultipleChoiceField(
+            choices=choices, widget=forms.CheckboxSelectMultiple
+        )
+        self.fields["wishes_location"] = forms.MultipleChoiceField(
+            choices=choices2, widget=forms.CheckboxSelectMultiple
+        )
