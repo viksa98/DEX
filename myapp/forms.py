@@ -39,8 +39,8 @@ class DexForm2(forms.Form):
             choices=choices2, widget=forms.Select(attrs={"class": "form-control"})
         )
         self.fields["wishes"] = forms.MultipleChoiceField(
-            choices=choices, widget=forms.CheckboxSelectMultiple
+            choices=choices, widget=forms.SelectMultiple, initial = "1"
         )
         self.fields["wishes_location"] = forms.MultipleChoiceField(
-            choices=choices2, widget=forms.CheckboxSelectMultiple
+            choices=choices2, widget=forms.SelectMultiple, initial = "1"
         )
