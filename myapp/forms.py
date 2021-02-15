@@ -24,7 +24,7 @@ class DexForm2(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         occupations = pd.read_excel(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
-        vals = occupations["SKP koda-4"]
+        vals = occupations["SKP poklic"].drop_duplicates()
         choices = list(zip(vals, vals))
         self.fields["skp_code"] = forms.ChoiceField(
             choices=choices, widget=forms.Select(attrs={"class": "form-control"})
