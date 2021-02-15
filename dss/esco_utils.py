@@ -72,7 +72,8 @@ class ESCOUtil:
         #         print(who)
         for uri in df[df[label] == skp_code]["URI"].unique():
             #             print(uri)
-            res = list(self.skills_up_graph(URIRef(uri)))
+            res, res_optional = self.skills_up_graph(URIRef(uri))
+            res = np.union1d(list(res), list(res_optional))
             union_res = np.union1d(res, union_res)
 
         return union_res
