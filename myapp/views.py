@@ -19,10 +19,11 @@ import myapp.utils as utils
 import pickle
 import networkx as nx
 import bisect
+from datetime import datetime
 
 import logging
 
-logger = logging.getLogger("root")
+logger = logging.getLogger("hecat")
 
 
 from django.conf import settings
@@ -39,10 +40,10 @@ class NumpyEncoder(DjangoJSONEncoder):
         return super().default(self, obj)
 
 
-folder = "D:/uploads/"
-
 @require_http_methods(["POST"])
 def eval_hecat_dex(request):
+    logger.info('POST')
+    start_time = datetime.now()
     dexmodel = DEXModel(settings.DEX_MODEL)
     esco = ESCOUtil()
     occupations = utils.get_occupation()
@@ -54,13 +55,15 @@ def eval_hecat_dex(request):
     id_distance_time = pickle.load( open(os.path.join(settings.DATA_ROOT,'id_dist_time.pcl'),'rb') )
     job_contract_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_contract_type.pcl'))
     job_working_hours_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_job_working_hours.pcl'))
+    langmer = utils.get_language()
+    dmer = utils.get_driver_lic()
     DG = nx.read_gpickle(os.path.join(settings.DATA_ROOT, 'elise/career_graph.pcl'))
 
 
     #Dummy default
     data = dict()
-    data['Languages'] = 'yes'
-    data['Driving licence'] = 'yes'
+    # data['Languages'] = 'yes'
+    # data['Driving licence'] = 'yes'
     data['Age appropriateness'] = 'yes'
     data['Disability appropriateness'] = 'yes'
 
@@ -75,6 +78,12 @@ def eval_hecat_dex(request):
 
         wishes = np.array(form.cleaned_data['wishes']).astype(int)
         wishes_location = np.array(form.cleaned_data['wishes_location']).astype(int)
+
+        bo_lang = form.cleaned_data['bo_lang']
+        bo_driving_lic = form.cleaned_data['bo_driving_lic']
+
+        logger.debug(skp_code, up_enota, wishes, wishes_location, bo_lang, bo_driving_lic)
+
     else:
         return HttpResponse('Error')
 
@@ -96,13 +105,18 @@ def eval_hecat_dex(request):
     all_eval = dict()
     all_qq = dict()
 
-    for r in dex_df.iloc[0:100].iterrows():
+    logger.debug(data)
+
+    for r in dex_df.iterrows():
         vals = r[1]
-        if '*' in wishes:
+        if 0 in wishes:
             data['SKP Wish'] = '*'
         else:
             data['SKP Wish'] = 'yes' if vals['SKP-6'] in wishes else 'no'
         ind = bisect.bisect_left([5,10], vals['diff'])
+        #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
+        if (vals['diff'] == 0):
+            ind = -1
         data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
 
         ind = bisect.bisect_left([10,50], vals['weight_num'] - vals['number of BO'])
@@ -112,14 +126,19 @@ def eval_hecat_dex(request):
         data['MSO'] = np.flipud(default['MSO'])[ind]
 
         # Job contract type
-        wh = job_contract_mer['SFpoklicaSKP'].astype(int) == vals['SKP-6']
+        wh = job_contract_mer['SFpoklicaSKP'] == vals['SKP-6']
+        if not np.any(wh):
+            wh = job_contract_mer['SFpoklicaSKP'].astype(int) == vals['SKP-6'].astype(int)
+
+
         if np.any(wh):
-            contract_type = job_contract_mer[wh].sort_values(by='dosežene točke (0-100)').iloc[0]['delovni čas']
+            contract_type = job_contract_mer[wh].sort_values(by='dosežene točke (0-100)',ascending=False).iloc[0]['delovni čas']
             if 'Kraj' in contract_type:
                 data['Job contract type'] = 'part time'
             else:
                 data['Job contract type'] = 'full time'
         else:
+    #         raise Exception('Wrong')
             data['Job contract type'] = '*'
 
         # Job career advancement
@@ -143,18 +162,51 @@ def eval_hecat_dex(request):
             data['Job career advancement'] = 'same'
 
         # Job working hours
-        wh = job_working_hours_mer['SFpoklicaSKP'].astype(int) == vals['SKP-6']
+        wh = job_working_hours_mer['SFpoklicaSKP'] == vals['SKP-6']
+        if not np.any(wh):
+            wh = job_working_hours_mer['SFpoklicaSKP'].astype(int) == vals['SKP-6'].astype(int)
         if np.any(wh):
-            working_hours = job_working_hours_mer[wh].sort_values(by='dosežene točke (0-100)').iloc[0]#['delovni čas']
+            working_hours = job_working_hours_mer[wh].sort_values(by='dosežene točke (0-100)',ascending=False).iloc[0]#['delovni čas']
             if working_hours['koda Urnik dela'] == 5:
                 data['Job working hours'] = 'daily shift'
             else:
                 data['Job working hours'] = 'daily/night shift'
         else:
             data['Job working hours'] = '*'
+    #         raise Exception('Wrong')
 
         #BO Wish location
-        data['BO wish location'] = 'yes' if vals['IDupEnote'].astype(int) in wishes_location else 'no'
+        data['BO wish location'] = '*'
+        if 0 not in wishes_location:
+            data['BO wish location'] = 'yes' if vals['IDupEnote'].astype(int) in wishes_location else 'no'
+
+        # Language
+        wh = langmer['SKP-6'] == vals['SKP-6']
+        if not np.any(wh):
+            wh = langmer['SKP-6'].astype(int) == vals['SKP-6'].astype(int)
+
+        rem_SL = langmer['koda Tuji jeziki'] != 'SL'
+        wh = wh & rem_SL
+        data['Languages'] = 'yes'
+        if np.any(wh):
+            job_language = langmer[wh].sort_values(by='dosežene točke (0-100)',ascending=False)#.iloc[0]['koda Tuji jeziki']
+            bo_sel_lang = job_language['koda Tuji jeziki'].isin(bo_lang)
+            data['Languages'] = 'yes' if job_language[bo_sel_lang]['dosežene točke (0-100)'].sum()/job_language['dosežene točke (0-100)'].sum() >= 0.5 else 'no'
+
+
+
+        # Driving Lic
+        wh = dmer['SFpoklicaSKP'] == vals['SKP-6']
+        if not np.any(wh):
+            wh = dmer['SFpoklicaSKP'].astype(int) == vals['SKP-6'].astype(int)
+
+
+        data['Driving licence'] = 'yes'
+        if np.any(wh):
+            job_dmer = dmer[wh].sort_values(by='dosežene točke (0-100)',ascending=False)#.iloc[0]['koda Tuji jeziki']
+            bo_sel_dmer = job_dmer['koda Vozniško dovoljenje'].isin(bo_driving_lic)
+            data['Driving licence'] = 'yes' if job_dmer[bo_sel_dmer]['dosežene točke (0-100)'].sum()/job_dmer['dosežene točke (0-100)'].sum() >= 0.5 else 'no'
+
 
         eval_res, qq_res = dexmodel.evaluate_model(data)
         all_eval[r[0]] = eval_res
@@ -168,8 +220,15 @@ def eval_hecat_dex(request):
 
     intermediate = pd.merge(dex_df.loc[final_index],df_eval.loc[final_index], right_on=df_eval.loc[final_index].index, left_on=dex_df.loc[final_index].index)
     final_df = pd.merge(intermediate, occupations.loc[:,['SKP koda-6','SKP poklic']], left_on='SKP-6', right_on='SKP koda-6')
+    logger.debug(len(final_df))
     final_df = pd.merge(final_df,df_qq.loc[final_index,['Eval_min', 'Eval_max']],  left_on='key_0', right_on=df_qq.loc[final_index].index)
-
+    logger.debug(datetime.now() - start_time)
+    logger.debug(len(df_qq))
+    logger.debug(len(df_eval))
+    logger.debug(len(final_index))
+    logger.debug(len(intermediate))
+    logger.debug(len(final_df))
+    logger.debug(final_index)
     return HttpResponse(final_df.to_html())
 
 def get_file():

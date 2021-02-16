@@ -37,20 +37,36 @@ def select_positions(mer, bo_id_upravne_enote, id_distance_time):#, distance=10)
 
     return xx
 
-def get_occupation():
-    return pd.read_excel(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
-    occupations = cache.get("occ")
-    if occupations is None:
-        logger.info("Loading occupations")
-        occupations = pd.read_excel(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
-        cache.add("occ", occupations, timeout=None)
+def __load_df(path):
+    if path.endswith('csv'):
+        return pd.read_csv(path)
+    elif path.endswith('pcl'):
+        return pd.read_pickle(path)
+    else:
+        return pd.read_excel(path)
 
-    return occupations
+def __get_load(file_name, key):
+    return __load_df(os.path.join(settings.DATA_ROOT, file_name))
+    df = cache.get(key)
+    if df is None:
+        logger.info("Loading %s" % key)
+        df = __load_df(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
+        cache.add(key, df, timeout=None)
+    return df
+
+def get_language():
+    return __get_load("elise/language.pcl", "language")
+
+def get_driver_lic():
+    return __get_load("elise/driving_licence.pcl", "driving_licence")
+
+def get_occupation():
+    return __get_load("SKP_ESCO.xlsx", "occ")
+
+def get_ue():
+    ue = __get_load("sifUpravneEnote.csv","ue")
+    ue = ue[ue.StatusSF == 'A']
+    return ue
 
 def get_jobs():
-    sif_skp = cache.get("sif_skp")
-    skp_code = float(skp_code)
-    if sif_skp is None:
-        logger.info("Loading sif_skp")
-        sif_skp = pd.read_csv(os.path.join(settings.DATA_ROOT, "dimSKP08.csv"))
-        cache.set("sif_skp", sif_skp, timeout=None)
+    return __get_load("dimSKP08.csv","sif_skp")
