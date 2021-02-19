@@ -15,12 +15,12 @@ import scipy.linalg as linalg
 class ScaleValue:
     """
     Class for sotring the values for each scale of attributes.
-    
+
     :param name: the name of the scale
     :param greoup: the group of the scale
     :param optim: a wrapper a for a PyTorch optimizer
     :param loss: an instance of a subclass of :class:`~pyro.infer.elbo.ELBO`.
-    
+
     """
 
     def __init__(self, name, group, description=None, order=0):
@@ -76,6 +76,7 @@ class Attribute:
         self.child_attrs = []
         self.dex_function = None
         self.level = None
+        self.helper_qq_interval()
 
     @staticmethod
     def parse(node, scales):
@@ -102,11 +103,14 @@ class Attribute:
             self.parent = attributes[self.parentstr]
             attributes[self.parentstr].child_attrs.append(self)
 
-    def map_qq(self, val, minv=1, maxv=None):
+
+    def helper_qq_interval(self, minv=1, maxv=None):
         if maxv is None:
             maxv = len(self.scale.scalevalue)
 
-        qq_list = np.linspace(minv, maxv, len(self.scale.scalevalue))
+        self.qq_list = np.linspace(minv, maxv, len(self.scale.scalevalue))
+
+    def map_qq(self, val):
 
         ind = np.argwhere(np.array(list(self.scale.scalevalue.keys())) == val).flatten()
 
@@ -114,7 +118,7 @@ class Attribute:
 
         if len(ind) != 1:
             raise Exception("Multiple mappings")
-        return qq_list[ind[0]]
+        return self.qq_list[ind[0]]
 
     def get_QQ_map(self, minv=1, maxv=None):
         if maxv is None:
@@ -150,11 +154,14 @@ class DEXFunction:
     def rules_to_QQ(self):
         for a in self.attr_list:
             k = a.name
+            a.helper_qq_interval()
             self.rules_QQ[k] = np.array(list(map(a.map_qq, self.rules[k])))
 
         self.output_values_QQ = np.array(
             list(map(self.my_attribute.map_qq, self.output_values))
         )
+
+        self.__vals = np.array([*self.rules_QQ.values()]).T
 
     def set_level(self):
         self.level = max([a.level for a in self.attr_list])
@@ -223,25 +230,26 @@ class DEXFunction:
                 raise Exception('Missing value for %s' % attr.name)
 
             ind = []
-            AttrVals.append(input[attr.name])            
+            AttrVals.append(input[attr.name])
             for a_val in np.array([input[attr.name]]).flatten():
-                inter_ind = np.argwhere(self.rules_QQ[attr.name] == np.round(a_val)).flatten() 
+                inter_ind = np.argwhere(self.rules_QQ[attr.name] == np.round(a_val)).flatten()
                 ind = np.union1d(ind, inter_ind).astype(int)
-                
+
             if exec_ind is None:
                 exec_ind = ind
             else:
                 exec_ind = np.intersect1d(exec_ind,ind).flatten()
-        
+
         A = AttrVals
         """
-        vals = np.array([*self.rules_QQ.values()]).T
+
         A = [input[key] for key in self.rules_QQ.keys()]
         # for k in f.rules_QQ.keys():
         #     in_data.append(demo[k])
 
         #         print(self.name,A)
-        exec_ind = np.where((vals == np.array(A).round()).all(axis=1))[0]
+#         exec_ind = np.where((vals == np.array(A).round()).all(axis=1))[0]
+        exec_ind = (self.__vals == np.array(A).round()).all(axis=1).nonzero()[0]
 
         if len(exec_ind) != 1:
             raise Exception(
@@ -253,6 +261,8 @@ class DEXFunction:
 
         c = self.output_values_QQ[exec_ind[0]]
         g = A @ self.w
+
+
         retVal = self.kc[c] * g + self.nc[c]
 
         return {self.my_attribute.name: retVal}
@@ -313,6 +323,7 @@ class DEXFunction:
         obj.attr_list = a_list
         for a in obj.attr_list:
             a.set_function(obj)
+
         obj.rules = rules
         obj.output_values = np.array(obj.output_values)
         obj.rules_to_QQ()

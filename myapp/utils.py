@@ -60,8 +60,23 @@ def get_language():
 def get_driver_lic():
     return __get_load("elise/driving_licence.pcl", "driving_licence")
 
+def get_processd_data():
+    return __get_load("driving_licence.pcl", "driving_licence")
+
+def get_pivot_driver_lic():
+    return __get_load('elise/pivot_driving_licence.pcl',"pivot_driving_licence")
+
 def get_occupation():
     return __get_load("SKP_ESCO.xlsx", "occ")
+
+def get_intermediate_results():
+    return __get_load('intermediate_data_2018-I.pcl','intermediate')
+
+def get_skp_skills():
+    napoved_year = 2018
+    napoved_period = 'I'
+
+    return __get_load('skp_skills_%d-%s.pcl' % (napoved_year,napoved_period), 'skp_skills' )
 
 def get_ue():
     ue = __get_load("sifUpravneEnote.csv","ue")
