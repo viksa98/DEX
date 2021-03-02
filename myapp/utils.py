@@ -42,6 +42,8 @@ def __load_df(path):
         return pd.read_csv(path)
     elif path.endswith('pcl'):
         return pd.read_pickle(path)
+    elif path.endswith('npy'):
+        return np.load(path)
     else:
         return pd.read_excel(path)
 
@@ -85,3 +87,9 @@ def get_ue():
 
 def get_jobs():
     return __get_load("dimSKP08.csv","sif_skp")
+
+def get_mapping_occ():
+    return __get_load("mapping/ESCO_occupations.csv",'mapping_esco')
+
+def get_similarity_matrix():
+    return __get_load("mapping/OccupationSimilarity_Combined.npy",'OccupationSimilarity_Combined')

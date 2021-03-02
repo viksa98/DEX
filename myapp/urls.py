@@ -7,6 +7,7 @@ urlpatterns = [
     path("dexinput", dex_input, name="dex-input"),
     path("hand", hand, name="hand"),
     re_path("^skills/(?P<skp_code>\d+\.\d+)/$", get_skills, name="get_skills"),
+    path("similarity", occupation_similarity, name = 'occupation_similarity'),
     path("handeval/", handeval, name="handeval"),
     path("test", skp_view, name = 'skp-view'),
     path("eval_hecat_dex", eval_hecat_dex, name = 'eval_hecat_dex'),

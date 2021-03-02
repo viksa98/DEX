@@ -218,6 +218,7 @@ def eval_hecat_dex(request):
     logger.debug(final_index)
     return HttpResponse(final_df.to_html())
 
+
 def get_file():
     filess = []
     for filename in os.listdir(folder):
@@ -334,3 +335,19 @@ def skp_view(request):
     else:
         form = DexForm2()
     return render(request, "name copy.html", {"form": form})
+
+
+def occupation_similarity(request):
+    uri = request.GET.get('uri')
+    occupations = utils.get_mapping_occ()
+    W_combined = utils.get_similarity_matrix()
+    wh = occupations.concept_uri == uri
+    occupation_id = occupations[wh].index[0]
+    most_similar = np.flip(np.argsort(W_combined[occupation_id,:]))
+    similarity = np.flip(np.sort(W_combined[occupation_id,:]))
+
+    df = occupations[['preferred_label']].copy().loc[most_similar]
+    df['similarity'] = similarity
+
+    # return HttpResponse(df.head(10).to_json(), content_type = 'application/json')
+    return HttpResponse(df.head(10).to_html())
