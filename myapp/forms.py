@@ -31,6 +31,8 @@ class DexForm2(forms.Form):
         ue = utils.get_ue()
 
         lang = utils.get_language()
+        lang = lang[lang['koda Tuji jeziki'] != 'SL']
+
         dlic = utils.get_driver_lic()
 
         vals = list(occ["SKP koda-4"])
@@ -66,16 +68,16 @@ class DexForm2(forms.Form):
             choices=choices2, widget=forms.Select(attrs={"class": "form-control"})
         )
         self.fields["wishes"] = forms.MultipleChoiceField(
-            choices=wish_choices, widget=forms.SelectMultiple, initial = "1"
+            choices=wish_choices, widget=forms.SelectMultiple(attrs={"class": "form-control"}), initial = "1"
         )
         self.fields["wishes_location"] = forms.MultipleChoiceField(
-            choices=wish_choices2, widget=forms.SelectMultiple, initial = "1"
+            choices=wish_choices2, widget=forms.SelectMultiple(attrs={"class": "form-control"}), initial = "1"
         )
 
         self.fields["bo_driving_lic"] = forms.MultipleChoiceField(
-            choices=choice_driver_lic, widget=forms.SelectMultiple, initial = "1"
+            choices=choice_driver_lic, widget=forms.SelectMultiple(attrs={"class": "form-control"}), initial = "1"
         )
 
         self.fields["bo_lang"] = forms.MultipleChoiceField(
-            choices=choice_lang, widget=forms.SelectMultiple, initial = "1"
+            choices=choice_lang, widget=forms.SelectMultiple(attrs={"class": "form-control"}), initial = "1"
         )
