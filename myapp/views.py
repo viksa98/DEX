@@ -337,6 +337,27 @@ def skp_view(request):
     return render(request, "name copy.html", {"form": form})
 
 
+def occupation_similarty_skp6(request):
+    skp6 = float(request.GET.get('skp6'))
+    skp2esco = utils.get_occupation()
+    wh = skp2esco['SKP koda-6'] == skp6
+
+    occupations = utils.get_mapping_occ()
+    W_combined = utils.get_similarity_matrix()
+
+    w_nesta = occupations.concept_uri == skp2esco[wh].URI.to_numpy()[0]
+    occupation_id = occupations[w_nesta].id.to_numpy()[0]
+    most_similar = np.flip(np.argsort(W_combined[occupation_id,:]))
+    similarity = np.flip(np.sort(W_combined[occupation_id,:]))
+
+    df = occupations[['preferred_label','concept_uri']].copy().loc[most_similar]
+    df['similarity'] = similarity
+    df = pd.merge(df,skp2esco[['URI','SKP koda-6']],how='left',left_on='concept_uri', right_on='URI').drop(columns=['URI']).drop_duplicates()
+# df.head(100)
+
+    # return HttpResponse(df.head(10).to_json(), content_type = 'application/json')
+    return HttpResponse(df.head(100).to_html())
+
 def occupation_similarity(request):
     uri = request.GET.get('uri')
     occupations = utils.get_mapping_occ()
