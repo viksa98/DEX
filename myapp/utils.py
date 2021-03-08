@@ -52,7 +52,7 @@ def __get_load(file_name, key):
     df = cache.get(key)
     if df is None:
         logger.info("Loading %s" % key)
-        df = __load_df(os.path.join(settings.DATA_ROOT, "SKP_ESCO.xlsx"))
+        df = __load_df(os.path.join(settings.DATA_ROOT, file_name))
         cache.add(key, df, timeout=None)
     return df
 
