@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+
 # from .models import Document
 from .forms import DocumentForm
 from .forms import *
@@ -14,6 +15,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.serializers import serialize
 import numpy as np
 from django.shortcuts import render
+
 # from .utils import select_positions
 import myapp.utils as utils
 import pickle
@@ -23,6 +25,7 @@ from datetime import datetime
 
 import logging
 from multiprocessing import Pool
+import multiprocessing as mp
 import itertools
 
 logger = logging.getLogger("hecat")
@@ -44,15 +47,17 @@ class NumpyEncoder(DjangoJSONEncoder):
 
 @require_http_methods(["POST"])
 def eval_hecat_dex(request):
-    logger.info('POST')
+    logger.info("POST")
     start_time = datetime.now()
     dexmodel = DEXModel(settings.DEX_MODEL)
     esco = ESCOUtil()
     occupations = utils.get_occupation()
     napoved_year = 2018
-    napoved_period = 'I'
+    napoved_period = "I"
 
-    skp_skills = utils.get_skp_skills()#pd.read_pickle('./data/skp_skills_%d-%s.pcl' % (napoved_year,napoved_period) )
+    skp_skills = (
+        utils.get_skp_skills()
+    )  # pd.read_pickle('./data/skp_skills_%d-%s.pcl' % (napoved_year,napoved_period) )
     res = utils.get_merged()
     complete_skills_dict = utils.get_complete_skills_dict()
     df_lang_dict = utils.get_skp_lang()
@@ -61,15 +66,15 @@ def eval_hecat_dex(request):
     # job_working_hours_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_job_working_hours.pcl'))
     # langmer = utils.get_language()
     # dmer = utils.get_driver_lic()
-    DG = nx.read_gpickle(os.path.join(settings.DATA_ROOT, 'elise/career_graph.pcl'))
-    logger.debug('Load done %s' % (datetime.now()-start_time))
+    DG = nx.read_gpickle(os.path.join(settings.DATA_ROOT, "elise/career_graph.pcl"))
+    logger.debug("Load done %s" % (datetime.now() - start_time))
 
-    #Dummy default
+    # Dummy default
     data = dict()
     # data['Languages'] = 'yes'
     # data['Driving licence'] = 'yes'
-    data['Age appropriateness'] = 'yes'
-    data['Disability appropriateness'] = 'yes'
+    data["Age appropriateness"] = "yes"
+    data["Disability appropriateness"] = "yes"
 
     default = dexmodel.get_intput_attributes()
 
@@ -77,56 +82,63 @@ def eval_hecat_dex(request):
     form = DexForm2(request.POST)
     if form.is_valid():
 
-        skp_code = int(form.cleaned_data['skp_code'])
-        up_enota = int(form.cleaned_data['up_enota']) # Sk.Loka
+        skp_code = int(form.cleaned_data["skp_code"])
+        up_enota = int(form.cleaned_data["up_enota"])  # Sk.Loka
 
-        wishes = np.array(form.cleaned_data['wishes']).astype(int)
-        wishes_location = np.array(form.cleaned_data['wishes_location']).astype(int)
+        wishes = np.array(form.cleaned_data["wishes"]).astype(int)
+        wishes_location = np.array(form.cleaned_data["wishes_location"]).astype(int)
 
-        bo_lang = form.cleaned_data['bo_lang']
-        bo_driving_lic = form.cleaned_data['bo_driving_lic']
+        bo_lang = form.cleaned_data["bo_lang"]
+        bo_driving_lic = form.cleaned_data["bo_driving_lic"]
 
     else:
-        return HttpResponse('Error')
+        return HttpResponse("Error")
 
-    data['BO wishes for contract type'] = 'full time'
-    data['BO career wishes'] = '*'
-    data['BO working hours wishes'] = 'daily shift'
+    data["BO wishes for contract type"] = "full time"
+    data["BO career wishes"] = "*"
+    data["BO working hours wishes"] = "daily shift"
     # Form end
 
-
-    sel_cols_lic = ['DLIC_%s' % x for x in bo_driving_lic]
-    sel_cols_lang = ['LANG_%s' % x for x in bo_lang]
+    sel_cols_lic = ["DLIC_%s" % x for x in bo_driving_lic]
+    sel_cols_lang = ["LANG_%s" % x for x in bo_lang]
     inter = utils.get_intermediate_results()
-    lic_lang = pd.DataFrame(data={'SKP-6':inter['SKP-6'],
-                       'dlic': inter.loc[:,sel_cols_lic].sum(axis=1)/inter.loc[:,'SUM_DLIC'],
-                      'dlang': inter.loc[:,sel_cols_lang].sum(axis=1)/inter.loc[:,'SUM_LANG'],
-                                 'delovni čas':inter['delovni čas'],
-                                 'koda Urnik dela':inter['koda Urnik dela'],
-                                 'skills':inter['skills']})#.fillna(1)
-    lic_lang[['dlic','dlang']] = lic_lang[['dlic','dlang']].fillna(1)
+    lic_lang = pd.DataFrame(
+        data={
+            "SKP-6": inter["SKP-6"],
+            "dlic": inter.loc[:, sel_cols_lic].sum(axis=1) / inter.loc[:, "SUM_DLIC"],
+            "dlang": inter.loc[:, sel_cols_lang].sum(axis=1) / inter.loc[:, "SUM_LANG"],
+            "delovni čas": inter["delovni čas"],
+            "koda Urnik dela": inter["koda Urnik dela"],
+            "skills": inter["skills"],
+        }
+    )  # .fillna(1)
+    lic_lang[["dlic", "dlang"]] = lic_lang[["dlic", "dlang"]].fillna(1)
 
     # There is a case when SKP4 is listed. SKP-6 has two 'decimal' digits. This line checks whether the code is SKP4 or SKP6
-    col_name = 'SKP koda-4' if int(skp_code) == skp_code else 'SKP koda-6'
+    col_name = "SKP koda-4" if int(skp_code) == skp_code else "SKP koda-6"
     #     bo_skills = esco.get_all_skills_SKP2ESCO(occupations,  skp_code, col_name)
     bo_skills = np.array([])
     for uri in occupations[occupations[col_name] == skp_code]["URI"].unique():
-        bo_skills = np.union1d(complete_skills_dict[uri]['basic'],complete_skills_dict[uri]['optional'])
+        bo_skills = np.union1d(
+            complete_skills_dict[uri]["basic"], complete_skills_dict[uri]["optional"]
+        )
 
-    #dif_skills = skp_skills.apply(lambda x: len(np.setdiff1d(x.skills, bo_skills)), axis=1)
+    # dif_skills = skp_skills.apply(lambda x: len(np.setdiff1d(x.skills, bo_skills)), axis=1)
     len_skill = skp_skills.apply(lambda x: len(x.skills), axis=1)
     wh = len_skill != 0
-    dif_skills = skp_skills.apply(lambda x: len(np.intersect1d(x.skills, bo_skills)), axis=1)
+    dif_skills = skp_skills.apply(
+        lambda x: len(np.intersect1d(x.skills, bo_skills)), axis=1
+    )
     dif_skills[~wh] = np.nan
-    dif_skills[wh] = dif_skills[wh]/len_skill[wh]*100
+    dif_skills[wh] = dif_skills[wh] / len_skill[wh] * 100
 
     resSKPs = utils.select_positions(res, up_enota, id_distance_time)
-    dif_df = pd.DataFrame({'SKP-6':skp_skills['SKP-6'],'diff':dif_skills})
-    dex_df = pd.merge(resSKPs, dif_df, on='SKP-6')
-    dex_df = pd.merge(dex_df, lic_lang, how='left', on='SKP-6')
+    dif_df = pd.DataFrame({"SKP-6": skp_skills["SKP-6"], "diff": dif_skills})
+    dex_df = pd.merge(resSKPs, dif_df, on="SKP-6")
+    dex_df = pd.merge(dex_df, lic_lang, how="left", on="SKP-6")
 
-    mask_dlic = inter.columns.str.contains('DLIC_.*')
-    mask_lang = inter.columns.str.contains('LANG_.*')
+    mask_dlic = inter.columns.str.contains("DLIC_.*")
+    mask_lang = inter.columns.str.contains("LANG_.*")
 
     all_eval = dict()
     all_qq = dict()
@@ -136,75 +148,88 @@ def eval_hecat_dex(request):
     for r in dex_df.iterrows():
         vals = r[1]
         if 0 in wishes:
-            data['SKP Wish'] = '*'
+            data["SKP Wish"] = "*"
         else:
-            data['SKP Wish'] = 'yes' if vals['SKP-6'] in wishes else 'no'
+            data["SKP Wish"] = "yes" if vals["SKP-6"] in wishes else "no"
 
-        ind = bisect.bisect_left([10,30], 100-vals['diff'])
+        ind = bisect.bisect_left([10, 30], 100 - vals["diff"])
         #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
-        if np.isnan(vals['diff']):
+        if np.isnan(vals["diff"]):
             ind = -1
-        data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
-#     ind = bisect.bisect_left([5,10], vals['diff'])
-#     #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
-#     if (vals['diff'] == 0):
-#         ind = -1
-#     data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
+        data["SKPvsESCO"] = np.flipud(default["SKPvsESCO"])[ind]
+        #     ind = bisect.bisect_left([5,10], vals['diff'])
+        #     #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
+        #     if (vals['diff'] == 0):
+        #         ind = -1
+        #     data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
 
-        ind = bisect.bisect_left([10,50], vals['weight_num'] - vals['number of BO'])
-        data['Available positions'] = default['Available positions'][ind]
+        ind = bisect.bisect_left([10, 50], vals["weight_num"] - vals["number of BO"])
+        data["Available positions"] = default["Available positions"][ind]
 
-        ind = bisect.bisect_left([10,20], vals['distance_km'])
-        data['MSO'] = np.flipud(default['MSO'])[ind]
-
+        ind = bisect.bisect_left([10, 20], vals["distance_km"])
+        data["MSO"] = np.flipud(default["MSO"])[ind]
 
         # Language
-        data['Languages'] = 'yes'
-        data['Driving licence'] = 'yes'
-        if pd.isnull(vals['delovni čas']):
-            data['Job contract type'] = '*'
-        elif 'Kraj' in vals['delovni čas']:
-            data['Job contract type'] = 'part time'
+        data["Languages"] = "yes"
+        data["Driving licence"] = "yes"
+        if pd.isnull(vals["delovni čas"]):
+            data["Job contract type"] = "*"
+        elif "Kraj" in vals["delovni čas"]:
+            data["Job contract type"] = "part time"
         else:
-            data['Job contract type'] = 'full time'
+            data["Job contract type"] = "full time"
 
-        if pd.isnull(vals['koda Urnik dela']):
-            data['Job working hours'] = '*'
-        elif float(vals['koda Urnik dela']) == 5:
-            data['Job working hours'] = 'daily shift'
+        if pd.isnull(vals["koda Urnik dela"]):
+            data["Job working hours"] = "*"
+        elif float(vals["koda Urnik dela"]) == 5:
+            data["Job working hours"] = "daily shift"
         else:
-            data['Job working hours'] = 'daily/night shift'
+            data["Job working hours"] = "daily/night shift"
 
-        data['Driving licence'] = 'yes' if vals['dlic'] >= 0.5 else 'no'
-        data['Languages'] = 'yes' if vals['dlang'] >= 0.5 else 'no'
+        data["Driving licence"] = "yes" if vals["dlic"] >= 0.5 else "no"
+        data["Languages"] = "yes" if vals["dlang"] >= 0.5 else "no"
 
         # Job career advancement
         try:
-            adv = len(list(nx.all_simple_paths(DG, source=skp_code, target=int(vals['SKP-4']), cutoff=3)))
+            adv = len(
+                list(
+                    nx.all_simple_paths(
+                        DG, source=skp_code, target=int(vals["SKP-4"]), cutoff=3
+                    )
+                )
+            )
         except:
             adv = -1
 
         try:
-            degrade = len(list(nx.all_simple_paths(DG, target=skp_code, source=int(vals['SKP-4']), cutoff=3)))
+            degrade = len(
+                list(
+                    nx.all_simple_paths(
+                        DG, target=skp_code, source=int(vals["SKP-4"]), cutoff=3
+                    )
+                )
+            )
         except:
             degrade = -1
 
         if adv > degrade:
-            data['Job career advancement'] = 'up'
+            data["Job career advancement"] = "up"
         elif adv < degrade:
-            data['Job career advancement'] = 'down'
+            data["Job career advancement"] = "down"
         elif adv == -1 and degrade == -1:
-            data['Job career advancement'] = '*'
+            data["Job career advancement"] = "*"
         else:
-            data['Job career advancement'] = 'same'
+            data["Job career advancement"] = "same"
 
         # Job working hours
 
         # print(vals['IDupEnote'].astype(int))
-        #BO Wish location
-        data['BO wish location'] = '*'
+        # BO Wish location
+        data["BO wish location"] = "*"
         if 0 not in wishes_location:
-            data['BO wish location'] = 'yes' if int(vals['IDupEnote']) in wishes_location else 'no'
+            data["BO wish location"] = (
+                "yes" if int(vals["IDupEnote"]) in wishes_location else "no"
+            )
         # eval_res, qq_res = dexmodel.evaluate_model(data)
         # all_eval[r[0]] = eval_res
         # all_qq[r[0]] = qq_res
@@ -212,26 +237,42 @@ def eval_hecat_dex(request):
     #
     #
     #
-    with Pool(processes=4) as pool:
-        x = pool.starmap(dex_eval,zip(data_val.keys(),
-                data_val.values(),
-                itertools.repeat(dexmodel)))
+    with Pool(processes=mp.cpu_count()) as pool:
+        x = pool.starmap(
+            dex_eval,
+            zip(data_val.keys(), data_val.values(), itertools.repeat(dexmodel)),
+        )
 
     all_eval, all_qq, keys = zip(*x)
     all_eval = dict(zip(keys, all_eval))
     all_qq = dict(zip(keys, all_qq))
 
-    df_qq = pd.DataFrame.from_dict(all_qq,orient='index').reset_index()
-    df_eval = pd.DataFrame.from_dict(all_eval,orient='index').reset_index()
-    df_qq['Eval_min'] = df_qq.apply(lambda x: np.min(x['SKP Evaluation']) ,axis=1)
-    df_qq['Eval_max'] = df_qq.apply(lambda x: np.max(x['SKP Evaluation']) ,axis=1)
-    final_index = df_qq.sort_values(by='Eval_max',ascending=False).head(10).index
+    df_qq = pd.DataFrame.from_dict(all_qq, orient="index").reset_index()
+    df_eval = pd.DataFrame.from_dict(all_eval, orient="index").reset_index()
+    df_qq["Eval_min"] = df_qq.apply(lambda x: np.min(x["SKP Evaluation"]), axis=1)
+    df_qq["Eval_max"] = df_qq.apply(lambda x: np.max(x["SKP Evaluation"]), axis=1)
+    final_index = df_qq.sort_values(by="Eval_max", ascending=False).head(10).index
 
-    intermediate = pd.merge(dex_df.loc[final_index],df_eval.loc[final_index], right_on=df_eval.loc[final_index].index, left_on=dex_df.loc[final_index].index)
-    final_df = pd.merge(intermediate, occupations.loc[:,['SKP koda-6','SKP poklic']], left_on='SKP-6', right_on='SKP koda-6')
+    intermediate = pd.merge(
+        dex_df.loc[final_index],
+        df_eval.loc[final_index],
+        right_on=df_eval.loc[final_index].index,
+        left_on=dex_df.loc[final_index].index,
+    )
+    final_df = pd.merge(
+        intermediate,
+        occupations.loc[:, ["SKP koda-6", "SKP poklic"]],
+        left_on="SKP-6",
+        right_on="SKP koda-6",
+    )
     logger.debug(len(final_df))
-    final_df = pd.merge(final_df,df_qq.loc[final_index,['Eval_min', 'Eval_max']],  left_on='key_0', right_on=df_qq.loc[final_index].index)
-    final_df = final_df.drop(columns='skills')
+    final_df = pd.merge(
+        final_df,
+        df_qq.loc[final_index, ["Eval_min", "Eval_max"]],
+        left_on="key_0",
+        right_on=df_qq.loc[final_index].index,
+    )
+    final_df = final_df.drop(columns="skills")
 
     logger.debug(datetime.now() - start_time)
     # logger.debug(len(df_qq))
@@ -242,7 +283,8 @@ def eval_hecat_dex(request):
     # logger.debug(final_index)
     return HttpResponse(final_df.to_html())
 
-def dex_eval(key, data,model):
+
+def dex_eval(key, data, model):
     eval_res, qq_res = model.evaluate_model(data)
     return eval_res, qq_res, key
 
@@ -366,37 +408,48 @@ def skp_view(request):
 
 
 def occupation_similarty_skp6(request):
-    skp6 = float(request.GET.get('skp6'))
+    skp6 = float(request.GET.get("skp6"))
     skp2esco = utils.get_occupation()
-    wh = skp2esco['SKP koda-6'] == skp6
+    wh = skp2esco["SKP koda-6"] == skp6
 
     occupations = utils.get_mapping_occ()
     W_combined = utils.get_similarity_matrix()
 
     w_nesta = occupations.concept_uri == skp2esco[wh].URI.to_numpy()[0]
     occupation_id = occupations[w_nesta].id.to_numpy()[0]
-    most_similar = np.flip(np.argsort(W_combined[occupation_id,:]))
-    similarity = np.flip(np.sort(W_combined[occupation_id,:]))
+    most_similar = np.flip(np.argsort(W_combined[occupation_id, :]))
+    similarity = np.flip(np.sort(W_combined[occupation_id, :]))
 
-    df = occupations[['preferred_label','concept_uri']].copy().loc[most_similar]
-    df['similarity'] = similarity
-    df = pd.merge(df,skp2esco[['URI','SKP koda-6']],how='left',left_on='concept_uri', right_on='URI').drop(columns=['URI']).drop_duplicates()
-# df.head(100)
+    df = occupations[["preferred_label", "concept_uri"]].copy().loc[most_similar]
+    df["similarity"] = similarity
+    df = (
+        pd.merge(
+            df,
+            skp2esco[["URI", "SKP koda-6"]],
+            how="left",
+            left_on="concept_uri",
+            right_on="URI",
+        )
+        .drop(columns=["URI"])
+        .drop_duplicates()
+    )
+    # df.head(100)
 
     # return HttpResponse(df.head(10).to_json(), content_type = 'application/json')
     return HttpResponse(df.head(100).to_html())
 
+
 def occupation_similarity(request):
-    uri = request.GET.get('uri')
+    uri = request.GET.get("uri")
     occupations = utils.get_mapping_occ()
     W_combined = utils.get_similarity_matrix()
     wh = occupations.concept_uri == uri
     occupation_id = occupations[wh].index[0]
-    most_similar = np.flip(np.argsort(W_combined[occupation_id,:]))
-    similarity = np.flip(np.sort(W_combined[occupation_id,:]))
+    most_similar = np.flip(np.argsort(W_combined[occupation_id, :]))
+    similarity = np.flip(np.sort(W_combined[occupation_id, :]))
 
-    df = occupations[['preferred_label']].copy().loc[most_similar]
-    df['similarity'] = similarity
+    df = occupations[["preferred_label"]].copy().loc[most_similar]
+    df["similarity"] = similarity
 
     # return HttpResponse(df.head(10).to_json(), content_type = 'application/json')
     return HttpResponse(df.head(10).to_html())
