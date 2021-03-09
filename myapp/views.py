@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from .models import Document
+# from .models import Document
 from .forms import DocumentForm
 from .forms import *
 from django.http import JsonResponse
@@ -22,6 +22,8 @@ import bisect
 from datetime import datetime
 
 import logging
+from multiprocessing import Pool
+import itertools
 
 logger = logging.getLogger("hecat")
 
@@ -130,7 +132,7 @@ def eval_hecat_dex(request):
     all_qq = dict()
 
     logger.debug(data)
-
+    data_val = dict()
     for r in dex_df.iterrows():
         vals = r[1]
         if 0 in wishes:
@@ -203,10 +205,21 @@ def eval_hecat_dex(request):
         data['BO wish location'] = '*'
         if 0 not in wishes_location:
             data['BO wish location'] = 'yes' if int(vals['IDupEnote']) in wishes_location else 'no'
+        # eval_res, qq_res = dexmodel.evaluate_model(data)
+        # all_eval[r[0]] = eval_res
+        # all_qq[r[0]] = qq_res
+        data_val[r[0]] = dict(data)
+    #
+    #
+    #
+    with Pool(processes=4) as pool:
+        x = pool.starmap(dex_eval,zip(data_val.keys(),
+                data_val.values(),
+                itertools.repeat(dexmodel)))
 
-        eval_res, qq_res = dexmodel.evaluate_model(data)
-        all_eval[r[0]] = eval_res
-        all_qq[r[0]] = qq_res
+    all_eval, all_qq, keys = zip(*x)
+    all_eval = dict(zip(keys, all_eval))
+    all_qq = dict(zip(keys, all_qq))
 
     df_qq = pd.DataFrame.from_dict(all_qq,orient='index').reset_index()
     df_eval = pd.DataFrame.from_dict(all_eval,orient='index').reset_index()
@@ -228,6 +241,10 @@ def eval_hecat_dex(request):
     # logger.debug(len(final_df))
     # logger.debug(final_index)
     return HttpResponse(final_df.to_html())
+
+def dex_eval(key, data,model):
+    eval_res, qq_res = model.evaluate_model(data)
+    return eval_res, qq_res, key
 
 
 def get_file():
