@@ -113,7 +113,13 @@ def eval_hecat_dex(request):
     for uri in occupations[occupations[col_name] == skp_code]["URI"].unique():
         bo_skills = np.union1d(complete_skills_dict[uri]['basic'],complete_skills_dict[uri]['optional'])
 
-    dif_skills = skp_skills.apply(lambda x: len(np.setdiff1d(x.skills, bo_skills)), axis=1)
+    #dif_skills = skp_skills.apply(lambda x: len(np.setdiff1d(x.skills, bo_skills)), axis=1)
+    len_skill = skp_skills.apply(lambda x: len(x.skills), axis=1)
+    wh = len_skill != 0
+    dif_skills = skp_skills.apply(lambda x: len(np.intersect1d(x.skills, bo_skills)), axis=1)
+    dif_skills[~wh] = np.nan
+    dif_skills[wh] = dif_skills[wh]/len_skill[wh]*100
+
     resSKPs = utils.select_positions(res, up_enota, id_distance_time)
     dif_df = pd.DataFrame({'SKP-6':skp_skills['SKP-6'],'diff':dif_skills})
     dex_df = pd.merge(resSKPs, dif_df, on='SKP-6')
@@ -134,11 +140,16 @@ def eval_hecat_dex(request):
         else:
             data['SKP Wish'] = 'yes' if vals['SKP-6'] in wishes else 'no'
 
-        ind = bisect.bisect_left([5,10], vals['diff'])
+        ind = bisect.bisect_left([10,30], 100-vals['diff'])
         #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
-        if (vals['diff'] == 0):
+        if np.isnan(vals['diff']):
             ind = -1
         data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
+#     ind = bisect.bisect_left([5,10], vals['diff'])
+#     #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
+#     if (vals['diff'] == 0):
+#         ind = -1
+#     data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
 
         ind = bisect.bisect_left([10,50], vals['weight_num'] - vals['number of BO'])
         data['Available positions'] = default['Available positions'][ind]
@@ -209,6 +220,8 @@ def eval_hecat_dex(request):
     final_df = pd.merge(intermediate, occupations.loc[:,['SKP koda-6','SKP poklic']], left_on='SKP-6', right_on='SKP koda-6')
     logger.debug(len(final_df))
     final_df = pd.merge(final_df,df_qq.loc[final_index,['Eval_min', 'Eval_max']],  left_on='key_0', right_on=df_qq.loc[final_index].index)
+    final_df = final_df.drop(columns='skills')
+
     logger.debug(datetime.now() - start_time)
     logger.debug(len(df_qq))
     logger.debug(len(df_eval))
