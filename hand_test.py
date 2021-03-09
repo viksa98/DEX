@@ -114,12 +114,14 @@ mask_lang = inter.columns.str.contains('LANG_.*')
 
 
 
-all_eval = dict()
-all_qq = dict()
 
-pbar = tqdm()
-pbar.reset(total=len(dex_df))
-for r in dex_df.iterrows():
+
+
+
+def check(r):
+    data_val = dict()
+    all_eval = dict()
+    all_qq = dict()
     vals = r[1]
     if 0 in wishes:
         data['SKP Wish'] = '*'
@@ -192,11 +194,35 @@ for r in dex_df.iterrows():
     if 0 not in wishes_location:
         data['BO wish location'] = 'yes' if int(vals['IDupEnote']) in wishes_location else 'no'
 
+    # data_val[r[0]] = data
+    return data
     eval_res, qq_res = dexmodel.evaluate_model(data)
+
     all_eval[r[0]] = eval_res
     all_qq[r[0]] = qq_res
-    pbar.update()
+
 #         break
     # len(bo_skills)
 
-import threading
+from multiprocessing import Pool
+if __name__ == '__main__':
+    pbar = tqdm()
+    pbar.reset(total=len(dex_df))
+    data_val = dict()
+    for r in  dex_df.iterrows():
+        data_val[r[0]] = check(r)
+        pbar.update()
+
+    pbar.reset(total=len(dex_df))
+    all_eval = dict()
+    all_qq = dict()
+    for k in data_val:
+        eval_res, qq_res = dexmodel.evaluate_model(data_val[k])
+
+        all_eval[k] = eval_res
+        all_qq[k] = qq_res
+        pbar.update()
+    # p = Pool(10)
+    # x=p.map(check, dex_df.iterrows())
+    #
+    # print(len(x))
