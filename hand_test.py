@@ -1,5 +1,5 @@
 from dss import dex
-from dss import esco_utils
+# from dss import esco_utils
 import pandas as pd
 import numpy as np
 import pickle
@@ -12,7 +12,7 @@ import myapp.utils as utils
 
 # FIX THIS
 dexmodel = dex.DEXModel('./data/SKP Evaluation version 3.xml')
-esco = esco_utils.ESCOUtil()
+# esco = esco_utils.ESCOUtil()
 occupations = pd.read_excel('./data/SKP_ESCO.xlsx')
 napoved_year = 2018
 napoved_period = 'I'
@@ -126,11 +126,16 @@ for r in dex_df.iterrows():
     else:
         data['SKP Wish'] = 'yes' if vals['SKP-6'] in wishes else 'no'
 
-    ind = bisect.bisect_left([5,10], vals['diff'])
+    ind = bisect.bisect_left([10,30], 100-vals['diff'])
     #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
-    if (vals['diff'] == 0):
+    if np.isnan(vals['diff']):
         ind = -1
     data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
+#     ind = bisect.bisect_left([5,10], vals['diff'])
+#     #### FIX THIS!!! This is for the case when the SKP2ESCO is too broad
+#     if (vals['diff'] == 0):
+#         ind = -1
+#     data['SKPvsESCO'] = np.flipud(default['SKPvsESCO'])[ind]
 
     ind = bisect.bisect_left([10,50], vals['weight_num'] - vals['number of BO'])
     data['Available positions'] = default['Available positions'][ind]
@@ -187,11 +192,11 @@ for r in dex_df.iterrows():
     if 0 not in wishes_location:
         data['BO wish location'] = 'yes' if int(vals['IDupEnote']) in wishes_location else 'no'
 
-
-
     eval_res, qq_res = dexmodel.evaluate_model(data)
     all_eval[r[0]] = eval_res
     all_qq[r[0]] = qq_res
     pbar.update()
 #         break
     # len(bo_skills)
+
+import threading
