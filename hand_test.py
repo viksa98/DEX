@@ -195,6 +195,7 @@ def check(r):
         data['BO wish location'] = 'yes' if int(vals['IDupEnote']) in wishes_location else 'no'
 
     # data_val[r[0]] = data
+
     return data
     eval_res, qq_res = dexmodel.evaluate_model(data)
 
@@ -204,7 +205,15 @@ def check(r):
 #         break
     # len(bo_skills)
 
+
+# import multiprocessing as mp
 from multiprocessing import Pool
+from datetime import datetime
+
+def eval(key, data):
+    eval_res, qq_res = dexmodel.evaluate_model(data)
+    return eval_res, qq_res, key
+
 if __name__ == '__main__':
     pbar = tqdm()
     pbar.reset(total=len(dex_df))
@@ -213,16 +222,36 @@ if __name__ == '__main__':
         data_val[r[0]] = check(r)
         pbar.update()
 
-    pbar.reset(total=len(dex_df))
-    all_eval = dict()
-    all_qq = dict()
-    for k in data_val:
-        eval_res, qq_res = dexmodel.evaluate_model(data_val[k])
-
-        all_eval[k] = eval_res
-        all_qq[k] = qq_res
-        pbar.update()
+    # pbar.reset(total=len(dex_df))
+    # all_eval = dict()
+    # all_qq = dict()
+    # mp.set_start_method('spawn')
+    # for k in data_val:
+    #     eval_res, qq_res = dexmodel.evaluate_model(data_val[k])
+    #
+    #     all_eval[k] = eval_res
+    #     all_qq[k] = qq_res
+    #     pbar.update()
+    start = datetime.now()
+    with Pool(processes=4) as pool:
+        x = pool.starmap(eval,zip(data_val.keys(),data_val.values()))
     # p = Pool(10)
     # x=p.map(check, dex_df.iterrows())
     #
-    # print(len(x))
+    print(datetime.now() - start)
+    all_eval, all_qq, keys = zip(*x)
+    all_eval = dict(zip(keys, all_eval))
+    all_qq = dict(zip(keys, all_qq))
+    print(datetime.now() - start)
+
+    df_qq = pd.DataFrame.from_dict(all_qq,orient='index').reset_index()
+    df_eval = pd.DataFrame.from_dict(all_eval,orient='index').reset_index()
+    df_qq['Eval_min'] = df_qq.apply(lambda x: np.min(x['SKP Evaluation']) ,axis=1)
+    df_qq['Eval_max'] = df_qq.apply(lambda x: np.max(x['SKP Evaluation']) ,axis=1)
+    final_index = df_qq.sort_values(by='Eval_max',ascending=False).head(10).index
+
+    intermediate = pd.merge(dex_df.loc[final_index],df_eval.loc[final_index], right_on=df_eval.loc[final_index].index, left_on=dex_df.loc[final_index].index)
+    final_df = pd.merge(intermediate, occupations.loc[:,['SKP koda-6','SKP poklic']], left_on='SKP-6', right_on='SKP koda-6')
+    final_df = pd.merge(final_df,df_qq.loc[final_index,['Eval_min', 'Eval_max']],  left_on='key_0', right_on=df_qq.loc[final_index].index)
+    final_df = final_df.drop(columns='skills')
+    print(datetime.now() - start)
