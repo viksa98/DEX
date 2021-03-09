@@ -60,7 +60,7 @@ def eval_hecat_dex(request):
     # langmer = utils.get_language()
     # dmer = utils.get_driver_lic()
     DG = nx.read_gpickle(os.path.join(settings.DATA_ROOT, 'elise/career_graph.pcl'))
-
+    logger.debug('Load done %s' % (datetime.now()-start_time))
 
     #Dummy default
     data = dict()
@@ -83,8 +83,6 @@ def eval_hecat_dex(request):
 
         bo_lang = form.cleaned_data['bo_lang']
         bo_driving_lic = form.cleaned_data['bo_driving_lic']
-
-        logger.debug(skp_code, up_enota, wishes, wishes_location, bo_lang, bo_driving_lic)
 
     else:
         return HttpResponse('Error')
@@ -223,12 +221,12 @@ def eval_hecat_dex(request):
     final_df = final_df.drop(columns='skills')
 
     logger.debug(datetime.now() - start_time)
-    logger.debug(len(df_qq))
-    logger.debug(len(df_eval))
-    logger.debug(len(final_index))
-    logger.debug(len(intermediate))
-    logger.debug(len(final_df))
-    logger.debug(final_index)
+    # logger.debug(len(df_qq))
+    # logger.debug(len(df_eval))
+    # logger.debug(len(final_index))
+    # logger.debug(len(intermediate))
+    # logger.debug(len(final_df))
+    # logger.debug(final_index)
     return HttpResponse(final_df.to_html())
 
 
