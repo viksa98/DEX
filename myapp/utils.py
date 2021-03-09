@@ -48,7 +48,8 @@ def __load_df(path):
         return pd.read_excel(path)
 
 def __get_load(file_name, key):
-    return __load_df(os.path.join(settings.DATA_ROOT, file_name))
+    if not settings.PRODUCTION:
+        return __load_df(os.path.join(settings.DATA_ROOT, file_name))
     df = cache.get(key)
     if df is None:
         logger.info("Loading %s" % key)
