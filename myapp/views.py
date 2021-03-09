@@ -51,10 +51,10 @@ def eval_hecat_dex(request):
     napoved_period = 'I'
 
     skp_skills = utils.get_skp_skills()#pd.read_pickle('./data/skp_skills_%d-%s.pcl' % (napoved_year,napoved_period) )
-    res = pd.read_pickle('./data/res_merged_2018.pcl')
-    complete_skills_dict = pickle.load(open('./data/complete_skills_dict.pcl','rb'))
-    df_lang_dict = pd.read_pickle('./data/skp_lang.pcl')
-    id_distance_time = pickle.load( open(os.path.join(settings.DATA_ROOT,'id_dist_time.pcl'),'rb') )
+    res = utils.get_merged()
+    complete_skills_dict = utils.get_complete_skills_dict()
+    df_lang_dict = utils.get_skp_lang()
+    id_distance_time = utils.get_id_dist_time()
     # job_contract_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_contract_type.pcl'))
     # job_working_hours_mer = pd.read_pickle(os.path.join(settings.DATA_ROOT, 'elise/job_job_working_hours.pcl'))
     # langmer = utils.get_language()

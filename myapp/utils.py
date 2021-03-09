@@ -57,6 +57,18 @@ def __get_load(file_name, key):
         cache.add(key, df, timeout=None)
     return df
 
+def get_id_dist_time():
+    return __get_load('id_dist_time.pcl','id_dist_time')
+
+def get_skp_lang():
+    return __get_load('skp_lang.pcl','skp_lang')
+
+def get_merged():
+    return __get_load('res_merged_2018.pcl','res_merged')
+
+def get_complete_skills_dict():
+    return __get_load('complete_skills_dict.pcl','complete_skills_dict')
+
 def get_language():
     return __get_load("elise/language.pcl", "language")
 
